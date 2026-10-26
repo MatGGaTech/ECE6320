@@ -1,0 +1,98 @@
+! NEIGHBORHOOD MODEL - TOPOLOGY FROM THE UPLOADED PROPOSAL
+! 9 customer taps: TOP, BOTTOM, TOP, BOTTOM, TOP, BOTTOM, TOP, BOTTOM, TOP
+! Houses with PV + BESS: H01 H02 H04 H07 H08 (the 5 LOAD + GENERATION labels).
+! All electrical numbers are teaching assumptions, NOT data in the proposal.
+! See README.md for model limitations (120 V line-neutral simplified residential supply).
+
+Clear
+New Circuit.Neighborhood phases=3 bus1=SourceBus basekv=12.47 pu=1.0 angle=0 frequency=60
+
+! One 3-phase step-down transformer - mirrors the single transformer in the figure.
+! Source: 12.47 kV line-line; secondary: 208 V line-line / 120 V line-neutral.
+New Transformer.StepDown phases=3 windings=2 buses=[SourceBus.1.2.3 LVBus.1.2.3.0]
+~ conns=[delta wye] kvs=[12.47 0.208] kvas=[75 75] %Rs=[0.5 0.5] XHL=2.0
+
+! Illustration-only conductor parameters, in ohm/km and 3-phase sequence model.
+New LineCode.MainCable nphases=3 r1=0.20 x1=0.08 r0=0.55 x0=0.22 c1=0 c0=0 units=km
+New LineCode.ServiceWire nphases=1 r1=0.45 x1=0.12 r0=0.45 x0=0.12 c1=0 c0=0 units=km
+
+! 24-hour shapes: index 1 = hour 1; hourly samples repeat for longer simulations.
+New LoadShape.ResidentialDay npts=24 interval=1 mult=[0.36 0.33 0.31 0.3 0.31 0.42 0.55 0.6 0.51 0.45 0.4 0.42 0.46 0.45 0.48 0.55 0.7 0.88 1 0.94 0.83 0.7 0.54 0.43]
+New LoadShape.SolarDay npts=24 interval=1 mult=[0 0 0 0 0 0 0.02 0.12 0.32 0.53 0.73 0.88 0.96 1 0.92 0.76 0.55 0.3 0.08 0 0 0 0 0]
+New LoadShape.BatteryDay npts=24 interval=1 mult=[0 0 0 0 0 0 0 0 0 0 0 -0.5 -0.5 -0.5 -0.5 0 0 0 0.5 0.5 0.5 0.5 0 0]
+
+! Main trunk: 9 connected 30 m spans = 270 m total. NO mesh/loops.
+New Line.Main01 phases=3 bus1=LVBus.1.2.3 bus2=Tap01.1.2.3 linecode=MainCable length=0.030 units=km
+New Line.Main02 phases=3 bus1=Tap01.1.2.3 bus2=Tap02.1.2.3 linecode=MainCable length=0.030 units=km
+New Line.Main03 phases=3 bus1=Tap02.1.2.3 bus2=Tap03.1.2.3 linecode=MainCable length=0.030 units=km
+New Line.Main04 phases=3 bus1=Tap03.1.2.3 bus2=Tap04.1.2.3 linecode=MainCable length=0.030 units=km
+New Line.Main05 phases=3 bus1=Tap04.1.2.3 bus2=Tap05.1.2.3 linecode=MainCable length=0.030 units=km
+New Line.Main06 phases=3 bus1=Tap05.1.2.3 bus2=Tap06.1.2.3 linecode=MainCable length=0.030 units=km
+New Line.Main07 phases=3 bus1=Tap06.1.2.3 bus2=Tap07.1.2.3 linecode=MainCable length=0.030 units=km
+New Line.Main08 phases=3 bus1=Tap07.1.2.3 bus2=Tap08.1.2.3 linecode=MainCable length=0.030 units=km
+New Line.Main09 phases=3 bus1=Tap08.1.2.3 bus2=Tap09.1.2.3 linecode=MainCable length=0.030 units=km
+
+! 9 single-phase service drops (12 m). Houses rotate across A, B, C.
+! Tap 01: TOP    H01  LOAD + GENERATION (PV+BESS)
+New Line.Service01 phases=1 bus1=Tap01.1 bus2=House01.1 linecode=ServiceWire length=0.012 units=km
+New Load.H01 phases=1 bus1=House01.1 conn=wye kv=0.120 kw=3.5 pf=0.95 model=1 daily=ResidentialDay
+! Tap 02: BOTTOM H02  LOAD + GENERATION (PV+BESS)
+New Line.Service02 phases=1 bus1=Tap02.2 bus2=House02.2 linecode=ServiceWire length=0.012 units=km
+New Load.H02 phases=1 bus1=House02.2 conn=wye kv=0.120 kw=4 pf=0.95 model=1 daily=ResidentialDay
+! Tap 03: TOP    H03  LOAD ONLY
+New Line.Service03 phases=1 bus1=Tap03.3 bus2=House03.3 linecode=ServiceWire length=0.012 units=km
+New Load.H03 phases=1 bus1=House03.3 conn=wye kv=0.120 kw=3 pf=0.95 model=1 daily=ResidentialDay
+! Tap 04: BOTTOM H04  LOAD + GENERATION (PV+BESS)
+New Line.Service04 phases=1 bus1=Tap04.1 bus2=House04.1 linecode=ServiceWire length=0.012 units=km
+New Load.H04 phases=1 bus1=House04.1 conn=wye kv=0.120 kw=3.8 pf=0.95 model=1 daily=ResidentialDay
+! Tap 05: TOP    H05  LOAD ONLY
+New Line.Service05 phases=1 bus1=Tap05.2 bus2=House05.2 linecode=ServiceWire length=0.012 units=km
+New Load.H05 phases=1 bus1=House05.2 conn=wye kv=0.120 kw=4.2 pf=0.95 model=1 daily=ResidentialDay
+! Tap 06: BOTTOM H06  LOAD ONLY
+New Line.Service06 phases=1 bus1=Tap06.3 bus2=House06.3 linecode=ServiceWire length=0.012 units=km
+New Load.H06 phases=1 bus1=House06.3 conn=wye kv=0.120 kw=3.4 pf=0.95 model=1 daily=ResidentialDay
+! Tap 07: TOP    H07  LOAD + GENERATION (PV+BESS)
+New Line.Service07 phases=1 bus1=Tap07.1 bus2=House07.1 linecode=ServiceWire length=0.012 units=km
+New Load.H07 phases=1 bus1=House07.1 conn=wye kv=0.120 kw=3.6 pf=0.95 model=1 daily=ResidentialDay
+! Tap 08: BOTTOM H08  LOAD + GENERATION (PV+BESS)
+New Line.Service08 phases=1 bus1=Tap08.2 bus2=House08.2 linecode=ServiceWire length=0.012 units=km
+New Load.H08 phases=1 bus1=House08.2 conn=wye kv=0.120 kw=3.9 pf=0.95 model=1 daily=ResidentialDay
+! Tap 09: TOP    H09  LOAD ONLY
+New Line.Service09 phases=1 bus1=Tap09.3 bus2=House09.3 linecode=ServiceWire length=0.012 units=km
+New Load.H09 phases=1 bus1=House09.3 conn=wye kv=0.120 kw=4.1 pf=0.95 model=1 daily=ResidentialDay
+
+! Five 4 kW rooftop PV systems, connected ONLY to the houses labeled with generation.
+New PVSystem.PV_H01 phases=1 bus1=House01.1 conn=wye kv=0.120 kVA=4.5 Pmpp=4 irradiance=1 PF=1 daily=SolarDay
+New PVSystem.PV_H02 phases=1 bus1=House02.2 conn=wye kv=0.120 kVA=4.5 Pmpp=4 irradiance=1 PF=1 daily=SolarDay
+New PVSystem.PV_H04 phases=1 bus1=House04.1 conn=wye kv=0.120 kVA=4.5 Pmpp=4 irradiance=1 PF=1 daily=SolarDay
+New PVSystem.PV_H07 phases=1 bus1=House07.1 conn=wye kv=0.120 kVA=4.5 Pmpp=4 irradiance=1 PF=1 daily=SolarDay
+New PVSystem.PV_H08 phases=1 bus1=House08.2 conn=wye kv=0.120 kVA=4.5 Pmpp=4 irradiance=1 PF=1 daily=SolarDay
+
+! Five 3 kW / 12 kWh batteries. FOLLOW dispatch: negative=charge, positive=discharge.
+! Explicitly set initial energy 50%, reserve 20%; these are hypothetical settings.
+New Storage.BESS_H01 phases=1 bus1=House01.1 conn=wye kv=0.120 kVA=3.3
+~ kWrated=3 kWhrated=12 %stored=50 %reserve=20 %EffCharge=95 %EffDischarge=95
+~ %IdlingkW=0 DispMode=Follow Daily=BatteryDay
+New Storage.BESS_H02 phases=1 bus1=House02.2 conn=wye kv=0.120 kVA=3.3
+~ kWrated=3 kWhrated=12 %stored=50 %reserve=20 %EffCharge=95 %EffDischarge=95
+~ %IdlingkW=0 DispMode=Follow Daily=BatteryDay
+New Storage.BESS_H04 phases=1 bus1=House04.1 conn=wye kv=0.120 kVA=3.3
+~ kWrated=3 kWhrated=12 %stored=50 %reserve=20 %EffCharge=95 %EffDischarge=95
+~ %IdlingkW=0 DispMode=Follow Daily=BatteryDay
+New Storage.BESS_H07 phases=1 bus1=House07.1 conn=wye kv=0.120 kVA=3.3
+~ kWrated=3 kWhrated=12 %stored=50 %reserve=20 %EffCharge=95 %EffDischarge=95
+~ %IdlingkW=0 DispMode=Follow Daily=BatteryDay
+New Storage.BESS_H08 phases=1 bus1=House08.2 conn=wye kv=0.120 kVA=3.3
+~ kWrated=3 kWhrated=12 %stored=50 %reserve=20 %EffCharge=95 %EffDischarge=95
+~ %IdlingkW=0 DispMode=Follow Daily=BatteryDay
+
+! Monitors record 24 points during the daily solve in each RUN_*.dss file.
+! FeederPower: three-phase P/Q at transformer-side start of feeder (kW/kvar).
+New Monitor.FeederPower element=Line.Main01 terminal=1 mode=1 ppolar=no
+! EndVoltage: voltage/current at the last house service, House09.
+New Monitor.EndVoltage element=Line.Service09 terminal=2 mode=0
+New Monitor.BESS_H01_State element=Storage.BESS_H01 terminal=1 mode=3
+! Optional energy meter at the feeder head for loss/energy analyses.
+New EnergyMeter.FeederMeter element=Line.Main01 terminal=1
+
+! This file DEFINED the model. Open a RUN_*.dss file to solve it.
