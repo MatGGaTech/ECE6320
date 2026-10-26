@@ -1,7 +1,3 @@
-! NEIGHBORHOOD MODEL - TOPOLOGY FROM THE UPLOADED PROPOSAL
-! 9 customer taps: TOP, BOTTOM, TOP, BOTTOM, TOP, BOTTOM, TOP, BOTTOM, TOP
-! Houses with PV + BESS: H01 H02 H04 H07 H08 (the 5 LOAD + GENERATION labels).
-! All electrical numbers are teaching assumptions, NOT data in the proposal.
 ! See README.md for model limitations (120 V line-neutral simplified residential supply).
 
 Clear
